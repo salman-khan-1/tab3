@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>نظام طباعة طلبيات الفروع | لافتات المستودعات</title>
+    <!-- Bootstrap 5 RTL + Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Professional Arabic Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900;1000&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- GLOBAL RESET ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ---------- EXTREMELY COMPACT DASHBOARD UI ---------- */
+        body {
+            background: #eef2f5;
+            font-family: 'Cairo', 'Segoe UI', 'Tahoma', sans-serif;
+            padding: 0.6rem;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 0.6rem;
+        }
+        .app-header h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e2a3e;
+            margin-bottom: 0.1rem;
+        }
+        .app-header p {
+            color: #4a627a;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        .badge-format {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.55rem;
+            display: inline-block;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        .buttons-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4rem;
+            margin: 0.6rem 0 0.3rem;
+        }
+        .location-btn {
+            min-width: 85px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            border: none;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        .location-btn i {
+            font-size: 0.65rem;
+        }
+        .location-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .btn-makkah { background: #2c3e50; color: white; border-bottom: 2px solid #f1c40f; }
+        .btn-abhur { background: #1e6769; color: white; border-bottom: 2px solid #f39c12; }
+        .btn-jazan { background: #1e5a3c; color: white; border-bottom: 2px solid #e67e22; }
+        .btn-khamis { background: #5d2e2e; color: white; border-bottom: 2px solid #e74c3c; }
+        .btn-hamdaniya { background: #2980b9; color: white; border-bottom: 2px solid #2ecc71; }
+        .btn-salama { background: #8e44ad; color: white; border-bottom: 2px solid #f1c40f; }
+        .btn-sharaya { background: #d35400; color: white; border-bottom: 2px solid #f39c12; }
+        .btn-taif { background: #27ae60; color: white; border-bottom: 2px solid #f1c40f; }
+
+        .modal-content {
+            border-radius: 0.7rem;
+            border: none;
+            font-family: 'Cairo', sans-serif;
+        }
+        .modal-header {
+            background: #f8fafc;
+            padding: 0.4rem 0.8rem;
+        }
+        .modal-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+        .modal-body {
+            padding: 0.7rem;
+        }
+        .order-input {
+            font-size: 0.85rem;
+            padding: 0.35rem;
+            border-radius: 0.5rem;
+            border: 2px solid #cbd5e1;
+            text-align: center;
+            font-weight: 700;
+            font-family: 'Cairo', monospace;
+        }
+        .btn-generate {
+            background: #1e5a3c;
+            padding: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border-radius: 1.5rem;
+            font-family: 'Cairo', sans-serif;
+        }
+        .form-text {
+            font-size: 0.6rem;
+        }
+
+        .preview-modal .modal-dialog {
+            max-width: 500px;
+        }
+        .print-actions-bar {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 0.25rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 1.5rem;
+            font-family: 'Cairo', sans-serif;
+        }
+        .sign-preview {
+            background: white;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.8rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 0.6rem;
+            font-size: 0.55rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* ========== PRINTABLE SIGN TEMPLATE - EXACTLY LIKE REFERENCE ==========
+           NO DUPLICATE PAGES - SINGLE PAGE ONLY
+        */
+        .printable-sign {
+            display: none;
+        }
+        
+        .print-sign-container {
+            background: white;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Cairo', 'Segoe UI', 'Tahoma', 'Almarai', 'Tajawal', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .print-sign-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .print-line-1 {
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: #000000;
+            line-height: 1.3;
+            margin-bottom: 0.2rem;
+            letter-spacing: -0.5px;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .print-line-2 {
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: #000000;
+            line-height: 1.3;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .print-order-number {
+            font-size: 8rem;
+            font-weight: 900;
+            color: #000000;
+            line-height: 1.2;
+            letter-spacing: 4px;
+            margin: 0.6rem 0;
+            word-break: break-word;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .print-line-4 {
+            font-size: 5rem;
+            font-weight: 900;
+            color: #000000;
+            line-height: 1.3;
+            margin-top: 0.6rem;
+            letter-spacing: -0.3px;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        /* CRITICAL PRINT STYLES - NO DUPLICATE PAGES */
+        @media print {
+            /* Hide everything except the print container */
+            body * {
+                visibility: hidden;
+                display: none;
+            }
+            
+            .printable-sign,
+            .printable-sign * {
+                visibility: visible;
+                display: block;
+            }
+            
+            .printable-sign {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                z-index: 99999;
+            }
+            
+            .print-sign-container {
+                height: 100%;
+                width: 100%;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .print-line-1 {
+                font-size: 6rem !important;
+                font-weight: 900 !important;
+                margin-bottom: 0.3rem !important;
+                font-family: 'Cairo', sans-serif !important;
+            }
+            .print-line-2 {
+                font-size: 6rem !important;
+                font-weight: 900 !important;
+                margin-bottom: 0.8rem !important;
+                font-family: 'Cairo', sans-serif !important;
+            }
+            .print-order-number {
+                font-size: 8.5rem !important;
+                font-weight: 900 !important;
+                letter-spacing: 4px !important;
+                margin: 0.6rem 0 !important;
+                padding: 0 !important;
+                font-family: 'Cairo', sans-serif !important;
+            }
+            .print-line-4 {
+                font-size: 5.5rem !important;
+                font-weight: 900 !important;
+                margin-top: 0.5rem !important;
+                font-family: 'Cairo', sans-serif !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: white;
+                height: 100%;
+                width: 100%;
+            }
+        }
+        
+        /* Preview modal scaling */
+        .sign-preview .print-line-1 {
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+        .sign-preview .print-line-2 {
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+        .sign-preview .print-order-number {
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 0.2rem 0;
+        }
+        .sign-preview .print-line-4 {
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+        
+        .no-print {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        @media print {
+            .modal, .modal-backdrop, .btn, .dashboard-container,
+            .app-header, .buttons-grid, .footer-note, .print-actions-bar,
+            .alert, .modal-content, .modal-dialog, .no-print,
+            .modal-open, .modal.show, .modal-backdrop.show {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- EXTREMELY COMPACT DASHBOARD UI -->
+<div class="dashboard-container">
+    <div class="app-header">
+        <h1><i class="fas fa-print"></i> نظام طباعة الطلبيات</h1>
+        <p>اختر الفرع، أدخل الرقم، اطبع لافتة A4 (صفحة واحدة فقط)</p>
+        <div class="badge-format">
+            <i class="fas fa-font"></i> خط كايرو عريض | طلبية فرع / {الفرع} رقم / {الرقم} / مستودع جدة
+        </div>
+    </div>
+
+    <div class="buttons-grid">
+        <button class="location-btn btn-makkah" data-branch="مكة" data-warehouse="مستودع جدة">
+            <i class="fas fa-city"></i> مكة
+        </button>
+        <button class="location-btn btn-abhur" data-branch="أبحر" data-warehouse="مستودع جدة">
+            <i class="fas fa-water"></i> أبحر
+        </button>
+        <button class="location-btn btn-jazan" data-branch="جيزان" data-warehouse="مستودع جدة">
+            <i class="fas fa-mountain"></i> جيزان
+        </button>
+        <button class="location-btn btn-khamis" data-branch="خميس مشيط" data-warehouse="مستودع جدة">
+            <i class="fas fa-tree"></i> خميس مشيط
+        </button>
+        <button class="location-btn btn-hamdaniya" data-branch="حمدانية" data-warehouse="مستودع جدة">
+            <i class="fas fa-building"></i> حمدانية
+        </button>
+        <button class="location-btn btn-salama" data-branch="جده سلامه " data-warehouse="مستودع جدة">
+            <i class="fas fa-home"></i> جدة سلامه
+        </button>
+        <button class="location-btn btn-sharaya" data-branch="الشرايع" data-warehouse="مستودع جدة">
+            <i class="fas fa-store"></i> الشرايع
+        </button>
+        <button class="location-btn btn-taif" data-branch="طايف" data-warehouse="مستودع جدة">
+            <i class="fas fa-mountain"></i> طايف
+        </button>
+    </div>
+    <div class="footer-note no-print">
+        <i class="fas fa-hand-pointer"></i> اضغط على أي فرع، أدخل رقم الطلب، ثم اطبع - صفحة واحدة فقط
+    </div>
+</div>
+
+<!-- Modal for Order Number -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLocationTitle">
+                    <i class="fas fa-hashtag"></i> إدخال رقم الطلب
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label fw-bold small">رقم الطلب</label>
+                    <input type="text" class="form-control order-input" id="orderNumberInput" 
+                           placeholder="مثال: 1595" autocomplete="off" dir="ltr">
+                </div>
+                <button class="btn btn-generate w-100" id="generateSignBtn">
+                    <i class="fas fa-eye"></i> معاينة اللافتة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered preview-modal">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title"><i class="fas fa-scroll"></i> معاينة اللافتة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-1">
+                <div class="print-actions-bar no-print">
+                    <button id="printSignBtn" class="btn btn-primary btn-action">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                    <button id="downloadPdfBtn" class="btn btn-secondary btn-action">
+                        <i class="fas fa-download"></i> PDF
+                    </button>
+                    <button id="newSignBtn" class="btn btn-outline-dark btn-action" data-bs-dismiss="modal">
+                        <i class="fas fa-plus"></i> جديد
+                    </button>
+                </div>
+                <div id="signPreviewArea" class="sign-preview">
+                    <div style="color:#aaa; font-family: 'Cairo', sans-serif; font-size:0.7rem;">اختر فرع وأدخل رقم الطلب</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ISOLATED PRINTABLE SIGN CONTAINER - SINGLE PAGE ONLY -->
+<div id="printableSignContainer" class="printable-sign"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+    // =========================================================================
+    // SINGLE PAGE PRINT - NO DUPLICATE PAGES
+    // Perfect A4 single page sign with Cairo font, max bold
+    // =========================================================================
+    
+    let currentBranch = '';
+    let currentWarehouse = 'مستودع جدة';
+    let currentOrderNum = '';
+    let printInProgress = false;
+    
+    const orderModalEl = document.getElementById('orderModal');
+    const orderModal = new bootstrap.Modal(orderModalEl);
+    const previewModalEl = document.getElementById('previewModal');
+    const previewModal = new bootstrap.Modal(previewModalEl);
+    const modalLocationTitle = document.getElementById('modalLocationTitle');
+    const orderNumberInput = document.getElementById('orderNumberInput');
+    const generateBtn = document.getElementById('generateSignBtn');
+    const signPreviewArea = document.getElementById('signPreviewArea');
+    const printableContainer = document.getElementById('printableSignContainer');
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function generateExactSignHTML(branchName, orderNumber, warehouseName) {
+        const cleanBranch = escapeHtml(branchName.trim());
+        const cleanOrder = escapeHtml(orderNumber.trim() !== '' ? orderNumber.trim() : '_____');
+        const cleanWarehouse = escapeHtml(warehouseName.trim());
+        
+        return `
+            <div class="print-sign-container" id="masterPrintSign">
+                <div class="print-sign-content">
+                    <div class="print-line-1">طلبية فرع</div>
+                    <div class="print-line-2">${cleanBranch} رقم</div>
+                    <div class="print-order-number">${cleanOrder}</div>
+                    <div class="print-line-4">${cleanWarehouse}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderSignAndPreview(branch, orderNum, warehouse) {
+        const signHtml = generateExactSignHTML(branch, orderNum, warehouse);
+        signPreviewArea.innerHTML = signHtml;
+        printableContainer.innerHTML = signHtml;
+        
+        const container = printableContainer.querySelector('.print-sign-container');
+        if (container) container.removeAttribute('style');
+        const content = printableContainer.querySelector('.print-sign-content');
+        if (content) content.removeAttribute('style');
+    }
+    
+    function printOnlySign() {
+        if (!currentBranch || !currentOrderNum) {
+            alert('الرجاء إنشاء اللافتة أولاً');
+            return;
+        }
+        
+        if (printInProgress) return;
+        printInProgress = true;
+        
+        if (!printableContainer.innerHTML || printableContainer.innerHTML.trim() === '') {
+            printableContainer.innerHTML = generateExactSignHTML(currentBranch, currentOrderNum, currentWarehouse);
+        }
+        
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => {
+                printInProgress = false;
+            }, 1000);
+        }, 100);
+    }
+    
+    async function downloadSignAsPDF() {
+        if (!currentBranch || !currentOrderNum) {
+            alert('الرجاء إنشاء اللافتة أولاً');
+            return;
+        }
+        
+        if (!printableContainer.firstElementChild || printableContainer.innerHTML.trim() === '') {
+            printableContainer.innerHTML = generateExactSignHTML(currentBranch, currentOrderNum, currentWarehouse);
+        }
+        
+        const elementToPrint = printableContainer.firstElementChild;
+        if (!elementToPrint) {
+            alert('خطأ في إنشاء اللافتة');
+            return;
+        }
+        
+        const clone = elementToPrint.cloneNode(true);
+        clone.style.margin = '0';
+        clone.style.padding = '0';
+        clone.style.backgroundColor = 'white';
+        clone.style.height = 'auto';
+        clone.style.display = 'flex';
+        clone.style.alignItems = 'center';
+        clone.style.justifyContent = 'center';
+        clone.style.fontFamily = "'Cairo', sans-serif";
+        
+        const textLine1 = clone.querySelector('.print-line-1');
+        const textLine2 = clone.querySelector('.print-line-2');
+        const orderNumDiv = clone.querySelector('.print-order-number');
+        const textLine4 = clone.querySelector('.print-line-4');
+        
+        if (textLine1) {
+            textLine1.style.fontSize = '6rem';
+            textLine1.style.fontWeight = '900';
+            textLine1.style.color = '#000000';
+        }
+        if (textLine2) {
+            textLine2.style.fontSize = '6rem';
+            textLine2.style.fontWeight = '900';
+            textLine2.style.color = '#000000';
+        }
+        if (orderNumDiv) {
+            orderNumDiv.style.fontSize = '8.5rem';
+            orderNumDiv.style.fontWeight = '900';
+            orderNumDiv.style.letterSpacing = '4px';
+            orderNumDiv.style.margin = '0.6rem 0';
+            orderNumDiv.style.color = '#000000';
+        }
+        if (textLine4) {
+            textLine4.style.fontSize = '5.5rem';
+            textLine4.style.fontWeight = '900';
+            textLine4.style.color = '#000000';
+        }
+        
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        wrapper.style.background = 'white';
+        wrapper.style.direction = 'rtl';
+        wrapper.style.margin = '0';
+        wrapper.style.padding = '0';
+        document.body.appendChild(wrapper);
+        
+        const opt = {
+            margin:        [0, 0, 0, 0],
+            filename:     `لافتة_${currentBranch}_${currentOrderNum}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, backgroundColor: '#FFFFFF', letterRendering: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        try {
+            await html2pdf().set(opt).from(wrapper).save();
+        } catch(err) {
+            console.error('PDF error:', err);
+            alert('حدث خطأ أثناء إنشاء PDF');
+        } finally {
+            document.body.removeChild(wrapper);
+        }
+    }
+    
+    const locationBtns = document.querySelectorAll('.location-btn');
+    locationBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentBranch = btn.getAttribute('data-branch');
+            currentWarehouse = btn.getAttribute('data-warehouse');
+            
+            modalLocationTitle.innerHTML = `<i class="fas fa-store"></i> رقم الطلب - ${currentBranch}`;
+            orderNumberInput.value = '';
+            printInProgress = false;
+            orderModal.show();
+        });
+    });
+    
+    generateBtn.addEventListener('click', () => {
+        let orderNum = orderNumberInput.value.trim();
+        if (orderNum === "") {
+            alert("الرجاء إدخال رقم الطلب");
+            return;
+        }
+        if (!currentBranch) {
+            alert("حدث خطأ، الرجاء إعادة اختيار الفرع");
+            orderModal.hide();
+            return;
+        }
+        currentOrderNum = orderNum;
+        orderModal.hide();
+        
+        renderSignAndPreview(currentBranch, currentOrderNum, currentWarehouse);
+        previewModal.show();
+    });
+    
+    const printSignBtn = document.getElementById('printSignBtn');
+    if (printSignBtn) {
+        printSignBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            previewModal.hide();
+            setTimeout(() => {
+                printOnlySign();
+            }, 200);
+        });
+    }
+    
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            downloadSignAsPDF();
+        });
+    }
+    
+    const newSignBtn = document.getElementById('newSignBtn');
+    if (newSignBtn) {
+        newSignBtn.addEventListener('click', () => {
+            previewModal.hide();
+        });
+    }
+    
+    orderNumberInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            generateBtn.click();
+        }
+    });
+    
+    orderModalEl.addEventListener('shown.bs.modal', () => {
+        orderNumberInput.focus();
+    });
+    
+    console.log("✅ النظام جاهز - صفحة واحدة فقط | 8 فروع | خط كايرو عريض");
+</script>
+</body>
+</html>
