@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <!-- Prevent browser translation -->
+    <meta name="google" content="notranslate">
+    <meta name="google-translate-customization" content="notranslate">
+    <meta http-equiv="Content-Language" content="ar">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>نظام طباعة طلبيات الفروع | لافتات المستودعات</title>
+    <!-- Bootstrap 5 RTL + Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900;1000&display=swap" rel="stylesheet">
+    <style>
+        /* Prevent translation on all elements */
+        * {
+            -webkit-translate: none !important;
+            translate: none !important;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f5;
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            padding: 0.6rem;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 0.6rem;
+        }
+        .app-header h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e2a3e;
+            margin-bottom: 0.1rem;
+        }
+        .app-header p {
+            color: #4a627a;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        .badge-format {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.55rem;
+            display: inline-block;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        .buttons-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4rem;
+            margin: 0.6rem 0 0.3rem;
+        }
+        .location-btn {
+            min-width: 85px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            border: none;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        .location-btn i {
+            font-size: 0.65rem;
+        }
+        .btn-makkah { background: #2c3e50; color: white; border-bottom: 2px solid #f1c40f; }
+        .btn-abhur { background: #1e6769; color: white; border-bottom: 2px solid #f39c12; }
+        .btn-jazan { background: #1e5a3c; color: white; border-bottom: 2px solid #e67e22; }
+        .btn-khamis { background: #5d2e2e; color: white; border-bottom: 2px solid #e74c3c; }
+        .btn-hamdaniya { background: #2980b9; color: white; border-bottom: 2px solid #2ecc71; }
+        .btn-salama { background: #8e44ad; color: white; border-bottom: 2px solid #f1c40f; }
+        .btn-sharaya { background: #d35400; color: white; border-bottom: 2px solid #f39c12; }
+        .btn-taif { background: #27ae60; color: white; border-bottom: 2px solid #f1c40f; }
+
+        .modal-content {
+            border-radius: 0.7rem;
+            border: none;
+            font-family: 'Cairo', sans-serif;
+        }
+        .modal-header {
+            background: #f8fafc;
+            padding: 0.4rem 0.8rem;
+        }
+        .modal-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+        .modal-body {
+            padding: 0.7rem;
+        }
+        .order-input {
+            font-size: 0.85rem;
+            padding: 0.35rem;
+            border-radius: 0.5rem;
+            border: 2px solid #cbd5e1;
+            text-align: center;
+            font-weight: 700;
+            font-family: 'Cairo', monospace;
+        }
+        /* Remove spinner arrows for number input */
+        .order-input::-webkit-inner-spin-button, 
+        .order-input::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+        .btn-generate {
+            background: #1e5a3c;
+            padding: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border-radius: 1.5rem;
+            font-family: 'Cairo', sans-serif;
+            color: white;
+            border: none;
+        }
+        .btn-generate:hover {
+            background: #154d31;
+        }
+
+        .preview-modal .modal-dialog {
+            max-width: 500px;
+        }
+        .print-actions-bar {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 0.25rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 1.5rem;
+            font-family: 'Cairo', sans-serif;
+        }
+        .sign-preview {
+            background: white;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.8rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+        }
+        .sign-preview .sign-line-1 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: black;
+        }
+        .sign-preview .sign-line-2 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: black;
+        }
+        .sign-preview .sign-order {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin: 0.2rem 0;
+            color: black;
+        }
+        .sign-preview .sign-line-4 {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: black;
+        }
+        
+        /* COOL FOOTER STYLE - exactly as requested with ✧༺════════ ❖ ════════༻✧ */
+        .cool-sign-footer {
+            margin-top: 0.8rem;
+            padding-top: 0.5rem;
+            text-align: center;
+            font-family: 'Cairo', 'Courier New', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #4a5568;
+            direction: ltr;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.2rem;
+            flex-wrap: wrap;
+        }
+        
+        .cool-sign-footer .footer-decoration {
+            font-size: 0.9rem;
+            font-weight: normal;
+            color: #b8860b;
+            text-shadow: 0 0 1px rgba(184,134,11,0.3);
+            white-space: nowrap;
+        }
+        
+        /* responsive adjustment for small screens */
+        @media (max-width: 480px) {
+            .cool-sign-footer {
+                font-size: 0.65rem;
+            }
+            .cool-sign-footer .footer-decoration {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* ملحق button special style */
+        .btn-extension {
+            background: #8B691B;
+            color: white;
+            border: none;
+        }
+        .btn-extension:hover {
+            background: #6b4f14;
+            color: white;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 0.6rem;
+            font-size: 0.55rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* Hidden iframe for printing */
+        #printFrame {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 0;
+            visibility: hidden;
+        }
+        
+        /* Prevent translation on buttons and interactive elements */
+        button, .btn, .modal, .modal-content, input, label {
+            -webkit-translate: none !important;
+            translate: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="app-header">
+        <h1><i class="fas fa-print"></i> نظام طباعة الطلبيات</h1>
+        <p>اختر الفرع، أدخل الرقم، اطبع لافتة - صفحة واحدة مضمونة</p>
+        <div class="badge-format">
+            <i class="fas fa-font"></i> خط كايرو عريض | طلبية فرع / {الفرع} رقم / {الرقم} / مستودع جدة
+        </div>
+    </div>
+
+    <div class="buttons-grid">
+        <button class="location-btn btn-makkah" data-branch="مكة" data-warehouse="مستودع جدة">
+            <i class="fas fa-city"></i> مكة
+        </button>
+        <button class="location-btn btn-abhur" data-branch="أبحر" data-warehouse="مستودع جدة">
+            <i class="fas fa-water"></i> أبحر
+        </button>
+        <button class="location-btn btn-jazan" data-branch="جيزان" data-warehouse="مستودع جدة">
+            <i class="fas fa-mountain"></i> جيزان
+        </button>
+        <button class="location-btn btn-khamis" data-branch="خميس مشيط" data-warehouse="مستودع جدة">
+            <i class="fas fa-tree"></i> خميس مشيط
+        </button>
+        <button class="location-btn btn-hamdaniya" data-branch="حمدانية" data-warehouse="مستودع جدة">
+            <i class="fas fa-building"></i> حمدانية
+        </button>
+        <button class="location-btn btn-salama" data-branch="جده سلامه" data-warehouse="مستودع جدة">
+            <i class="fas fa-home"></i> جدة سلامه
+        </button>
+        <button class="location-btn btn-sharaya" data-branch="الشرايع" data-warehouse="مستودع جدة">
+            <i class="fas fa-store"></i> الشرايع
+        </button>
+        <button class="location-btn btn-taif" data-branch="طايف" data-warehouse="مستودع جدة">
+            <i class="fas fa-mountain"></i> طايف
+        </button>
+    </div>
+    <div class="footer-note">
+        <i class="fas fa-hand-pointer"></i> اضغط على أي فرع، أدخل رقم الطلب، ثم اطبع
+    </div>
+</div>
+
+<!-- Modal for Order Number -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLocationTitle">
+                    <i class="fas fa-hashtag"></i> إدخال رقم الطلب
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label fw-bold small">رقم الطلب</label>
+                    <input type="number" class="form-control order-input" id="orderNumberInput" 
+                           placeholder="مثال: 1595" autocomplete="off" dir="ltr" inputmode="numeric">
+                </div>
+                <button class="btn btn-generate w-100" id="generateSignBtn">
+                    <i class="fas fa-eye"></i> معاينة اللافتة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered preview-modal">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title"><i class="fas fa-scroll"></i> معاينة اللافتة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-1">
+                <div class="print-actions-bar">
+                    <button id="printSignBtn" class="btn btn-primary btn-action">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                    <button id="extensionBtn" class="btn btn-extension btn-action">
+                        <i class="fas fa-plus-circle"></i> ملحق
+                    </button>
+                    <button id="newSignBtn" class="btn btn-outline-dark btn-action" data-bs-dismiss="modal">
+                        <i class="fas fa-plus"></i> جديد
+                    </button>
+                </div>
+                <div id="signPreviewArea" class="sign-preview">
+                    <div style="color:#aaa; font-family: 'Cairo', sans-serif; font-size:0.7rem;">اختر فرع وأدخل رقم الطلب</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden iframe for printing without opening new window -->
+<iframe id="printFrame" name="printFrame"></iframe>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let currentBranch = '';
+    let currentWarehouse = 'مستودع جدة';
+    let currentOrderNum = '';
+    let isExtensionActive = false;  // Track if "ملحق" is added
+    
+    const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    const orderNumberInput = document.getElementById('orderNumberInput');
+    const signPreviewArea = document.getElementById('signPreviewArea');
+    const printFrame = document.getElementById('printFrame');
+    const extensionBtn = document.getElementById('extensionBtn');
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    // Function to generate the cool footer with ✧༺════════ ❖ ════════༻✧
+    function getCoolFooter() {
+        return `
+            <div class="cool-sign-footer">
+                <span class="footer-decoration">✧</span>
+                <span class="footer-decoration">༺</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span style="margin: 0 0.15rem;"> ❖ </span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">═</span>
+                <span class="footer-decoration">༻</span>
+                <span class="footer-decoration">✧</span>
+            </div>
+        `;
+    }
+    
+    // Print HTML generation - includes the cool footer with BLACK color for print mode
+    function generatePrintHTML(branchName, orderNumber, warehouseName, includeExtension) {
+        const cleanBranch = escapeHtml(branchName.trim());
+        const cleanOrder = escapeHtml(orderNumber.trim() !== '' ? orderNumber.trim() : '_____');
+        const cleanWarehouse = escapeHtml(warehouseName.trim());
+        
+        // Build the line-1 and line-2 based on extension
+        let line1Text = "طلبية فرع";
+        let line2Text = `${cleanBranch} رقم`;
+        
+        if (includeExtension) {
+            line1Text = "ملحق / طلبية فرع";
+            line2Text = `${cleanBranch} رقم`;
+        }
+        
+        // Cool footer for print - BLACK color for professional print (as requested)
+        const printCoolFooter = `
+            <div style="margin-top: 1.2rem; padding-top: 0.8rem; text-align: center; font-family: 'Cairo', 'Courier New', monospace; direction: ltr;">
+                <div style="font-size: 1.4rem; font-weight: 500; letter-spacing: 3px; color: #000000; display: flex; justify-content: center; align-items: center; gap: 0.1rem; flex-wrap: wrap;">
+                    <span style="font-size: 1.5rem;">✧</span>
+                    <span style="font-size: 1.5rem;">༺</span>
+                    <span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span>
+                    <span style="font-size: 1.8rem; margin: 0 0.2rem;">❖</span>
+                    <span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span><span style="font-size: 1.3rem;">═</span>
+                    <span style="font-size: 1.5rem;">༻</span>
+                    <span style="font-size: 1.5rem;">✧</span>
+                </div>
+            </div>
+        `;
+        
+        return `<!DOCTYPE html>
+            <html lang="ar" dir="rtl">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="google" content="notranslate">
+                <meta name="google-translate-customization" content="notranslate">
+                <meta http-equiv="Content-Language" content="ar">
+                <title>لافتة طلبية - ${cleanBranch} - ${cleanOrder}</title>
+                <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900;1000&display=swap" rel="stylesheet">
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                        -webkit-translate: none !important;
+                        translate: none !important;
+                    }
+                    
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: white;
+                        font-family: 'Cairo', sans-serif;
+                        width: 100%;
+                        height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    
+                    .print-container {
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        text-align: center;
+                        background: white;
+                    }
+                    
+                    .content {
+                        width: 100%;
+                        padding: 20px;
+                    }
+                    
+                    .line-1 {
+                        font-size: 5.5rem;
+                        font-weight: 900;
+                        color: black;
+                        margin-bottom: 0.2rem;
+                        line-height: 1.3;
+                    }
+                    
+                    .line-2 {
+                        font-size: 5.5rem;
+                        font-weight: 900;
+                        color: black;
+                        margin-bottom: 0.8rem;
+                        line-height: 1.3;
+                    }
+                    
+                    .order-number {
+                        font-size: 8rem;
+                        font-weight: 900;
+                        color: black;
+                        letter-spacing: 4px;
+                        margin: 0.6rem 0;
+                        line-height: 1.2;
+                        word-break: break-word;
+                    }
+                    
+                    .line-4 {
+                        font-size: 5rem;
+                        font-weight: 900;
+                        color: black;
+                        margin-top: 0.6rem;
+                        line-height: 1.3;
+                    }
+                    
+                    @media print {
+                        @page {
+                            size: A4;
+                            margin: 0;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            width: 210mm;
+                            height: 297mm;
+                        }
+                        .print-container {
+                            height: 100%;
+                        }
+                        .line-1 {
+                            font-size: 5.2rem;
+                            margin-bottom: 0.1rem;
+                        }
+                        .line-2 {
+                            font-size: 5.2rem;
+                            margin-bottom: 0.6rem;
+                        }
+                        .order-number {
+                            font-size: 7.5rem;
+                            margin: 0.4rem 0;
+                        }
+                        .line-4 {
+                            font-size: 4.8rem;
+                            margin-top: 0.4rem;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="print-container">
+                    <div class="content">
+                        <div class="line-1">${line1Text}</div>
+                        <div class="line-2">${line2Text}</div>
+                        <div class="order-number">${cleanOrder}</div>
+                        <div class="line-4">${cleanWarehouse}</div>
+                        ${printCoolFooter}
+                    </div>
+                </div>
+            </body>
+            </html>`;
+    }
+    
+    // Update preview with the cool footer and optional "ملحق" prefix at the beginning of the sentence
+    function updatePreview(branch, orderNum, warehouse, includeExtension) {
+        const cleanBranch = escapeHtml(branch.trim());
+        const cleanOrder = escapeHtml(orderNum.trim());
+        const cleanWarehouse = escapeHtml(warehouse.trim());
+        
+        // Get the cool footer HTML
+        const coolFooterHTML = getCoolFooter();
+        
+        let line1HTML = '<div class="sign-line-1">طلبية فرع</div>';
+        let line2HTML = `<div class="sign-line-2">${cleanBranch} رقم</div>`;
+        
+        if (includeExtension) {
+            // "ملحق" comes BEFORE "طلبيه فرع" - correct Arabic grammar
+            line1HTML = '<div class="sign-line-1">ملحق / طلبية فرع</div>';
+            line2HTML = `<div class="sign-line-2">${cleanBranch} رقم</div>`;
+        }
+        
+        // Inject into preview area
+        signPreviewArea.innerHTML = `
+            <div>
+                ${line1HTML}
+                ${line2HTML}
+                <div class="sign-order">${cleanOrder}</div>
+                <div class="sign-line-4">${cleanWarehouse}</div>
+                ${coolFooterHTML}
+            </div>
+        `;
+    }
+    
+    function printSign() {
+        if (!currentBranch || !currentOrderNum) {
+            alert('الرجاء إنشاء اللافتة أولاً');
+            return;
+        }
+        
+        const printHTML = generatePrintHTML(currentBranch, currentOrderNum, currentWarehouse, isExtensionActive);
+        
+        // Write to hidden iframe and print
+        const iframeDoc = printFrame.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(printHTML);
+        iframeDoc.close();
+        
+        // Wait for content to load then print
+        printFrame.contentWindow.onload = function() {
+            setTimeout(() => {
+                printFrame.contentWindow.print();
+            }, 300);
+        };
+        
+        // Fallback in case onload doesn't fire
+        setTimeout(() => {
+            if (printFrame.contentWindow) {
+                printFrame.contentWindow.print();
+            }
+        }, 500);
+    }
+    
+    // Function to generate the sign (called by Enter key or button click)
+    function generateSign() {
+        let orderNum = orderNumberInput.value.trim();
+        if (orderNum === "") {
+            alert("الرجاء إدخال رقم الطلب");
+            return;
+        }
+        if (!currentBranch) {
+            alert("حدث خطأ، الرجاء إعادة اختيار الفرع");
+            orderModal.hide();
+            return;
+        }
+        currentOrderNum = orderNum;
+        orderModal.hide();
+        
+        // Reset extension when generating new sign
+        isExtensionActive = false;
+        extensionBtn.style.background = '#8B691B';
+        extensionBtn.style.border = 'none';
+        extensionBtn.innerHTML = '<i class="fas fa-plus-circle"></i> ملحق';
+        
+        updatePreview(currentBranch, currentOrderNum, currentWarehouse, isExtensionActive);
+        previewModal.show();
+    }
+    
+    // Toggle extension (add/remove "ملحق" prefix at the beginning of the sentence)
+    function toggleExtension() {
+        if (!currentBranch || !currentOrderNum) {
+            alert('الرجاء إنشاء اللافتة أولاً');
+            return;
+        }
+        
+        isExtensionActive = !isExtensionActive;
+        
+        // Update button style to show active state
+        if (isExtensionActive) {
+            extensionBtn.style.background = '#4a2f0e';
+            extensionBtn.style.border = '1px solid #ffd966';
+            extensionBtn.innerHTML = '<i class="fas fa-check-circle"></i> ملحق ✓';
+        } else {
+            extensionBtn.style.background = '#8B691B';
+            extensionBtn.style.border = 'none';
+            extensionBtn.innerHTML = '<i class="fas fa-plus-circle"></i> ملحق';
+        }
+        
+        // Refresh preview with updated extension state
+        updatePreview(currentBranch, currentOrderNum, currentWarehouse, isExtensionActive);
+    }
+    
+    // Prevent browser translation on the main page
+    document.body.setAttribute('translate', 'no');
+    document.documentElement.setAttribute('translate', 'no');
+    
+    // Branch buttons
+    document.querySelectorAll('.location-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentBranch = btn.getAttribute('data-branch');
+            currentWarehouse = btn.getAttribute('data-warehouse');
+            document.getElementById('modalLocationTitle').innerHTML = `<i class="fas fa-store"></i> رقم الطلب - ${currentBranch}`;
+            orderNumberInput.value = '';
+            // Reset extension state when new branch is selected
+            isExtensionActive = false;
+            extensionBtn.style.background = '#8B691B';
+            extensionBtn.style.border = 'none';
+            extensionBtn.innerHTML = '<i class="fas fa-plus-circle"></i> ملحق';
+            orderModal.show();
+            // Focus the input field when modal opens
+            setTimeout(() => {
+                orderNumberInput.focus();
+            }, 300);
+        });
+    });
+    
+    // Generate button click handler
+    document.getElementById('generateSignBtn').addEventListener('click', generateSign);
+    
+    // Handle Enter key press on the number input field
+    orderNumberInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            generateSign();
+        }
+    });
+    
+    // Print button
+    document.getElementById('printSignBtn').addEventListener('click', () => {
+        previewModal.hide();
+        setTimeout(() => {
+            printSign();
+        }, 200);
+    });
+    
+    // Extension button (ملحق) - adds word at the beginning of the sentence
+    extensionBtn.addEventListener('click', toggleExtension);
+    
+    // New sign button (just closes modal and resets extension state)
+    document.getElementById('newSignBtn').addEventListener('click', () => {
+        // Reset extension when creating new sign
+        isExtensionActive = false;
+        extensionBtn.style.background = '#8B691B';
+        extensionBtn.style.border = 'none';
+        extensionBtn.innerHTML = '<i class="fas fa-plus-circle"></i> ملحق';
+    });
+</script>
+</body>
+</html>
