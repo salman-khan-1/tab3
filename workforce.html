@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workforce Scheduler</title>
+    <style>
+        /* ─── RESET & DARK THEME ─── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            width: 72px;
+            background: #111827cc;
+            backdrop-filter: blur(8px);
+            border-right: 1px solid #1e293b;
+            transition: width 0.25s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 1rem;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .sidebar:hover {
+            width: 200px;
+        }
+        .sidebar .nav-link {
+            color: #94a3b8;
+            border-radius: 12px;
+            padding: 0.65rem 1rem;
+            margin: 0.2rem 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            white-space: nowrap;
+            transition: 0.2s;
+            width: 100%;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+        }
+        .sidebar .nav-link i {
+            font-size: 1.4rem;
+            min-width: 24px;
+            font-style: normal;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: #00d9ff22;
+            color: #00d9ff;
+        }
+        .sidebar .nav-link span {
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .sidebar:hover .nav-link span {
+            opacity: 1;
+        }
+        /* ─── MAIN ─── */
+        .main-content {
+            flex: 1;
+            padding: 1.2rem 1.8rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        /* ─── GLASS CARDS ─── */
+        .glass {
+            background: #111827cc;
+            backdrop-filter: blur(8px);
+            border: 1px solid #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.6);
+            padding: 1.2rem 1.4rem;
+            transition: 0.2s;
+            margin-bottom: 1.2rem;
+        }
+        .glass:hover {
+            border-color: #00d9ff44;
+        }
+        .neon-text {
+            color: #00d9ff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-pending {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .badge-complete {
+            background: #22c55e;
+            color: #0f172a;
+        }
+        .badge-group {
+            background: #00d9ff22;
+            color: #00d9ff;
+            border: 1px solid #00d9ff55;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.4rem 0.9rem;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        .btn-neon {
+            background: #00d9ff22;
+            border-color: #00d9ff66;
+            color: #00d9ff;
+        }
+        .btn-neon:hover {
+            background: #00d9ff44;
+            color: #fff;
+        }
+        .btn-success {
+            background: #22c55e;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #16a34a;
+        }
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .btn-outline-secondary {
+            background: transparent;
+            border-color: #64748b;
+            color: #94a3b8;
+        }
+        .btn-outline-secondary:hover {
+            background: #1e293b;
+        }
+        .btn-outline-info {
+            background: transparent;
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+        .btn-outline-info:hover {
+            background: #0ea5e922;
+        }
+        .btn-outline-danger {
+            background: transparent;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .btn-outline-danger:hover {
+            background: #ef444422;
+        }
+        .btn-sm {
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+        }
+        .form-check {
+            display: inline-block;
+            margin-right: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+        .form-check-input {
+            margin-right: 0.4rem;
+            accent-color: #00d9ff;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .form-check-label {
+            cursor: pointer;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #e2e8f0;
+        }
+        th,
+        td {
+            padding: 0.5rem 0.6rem;
+            text-align: left;
+            border-bottom: 1px solid #1e293b;
+        }
+        th {
+            border-bottom: 2px solid #1e293b;
+            font-weight: 600;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .col-md-6 {
+            flex: 0 0 calc(50% - 0.5rem);
+            min-width: 240px;
+        }
+        .col-md-3 {
+            flex: 0 0 calc(25% - 0.75rem);
+            min-width: 120px;
+        }
+        .col-6 {
+            flex: 0 0 calc(50% - 0.5rem);
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .mt-3 {
+            margin-top: 1rem;
+        }
+        .mb-3 {
+            margin-bottom: 1.2rem;
+        }
+        .mb-4 {
+            margin-bottom: 1.8rem;
+        }
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+        .ms-2 {
+            margin-left: 0.5rem;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        .align-items-center {
+            align-items: center;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        .small-card {
+            padding: 0.8rem 1rem;
+        }
+        .badge-group {
+            font-size: 0.7rem;
+        }
+        .group-header-row {
+            background: #1e293b;
+            font-weight: 600;
+        }
+        .group-header-row td {
+            padding: 0.3rem 0.6rem;
+            border-bottom: 2px solid #00d9ff44;
+        }
+        .group-header-row .group-name {
+            color: #00d9ff;
+            font-size: 0.95rem;
+        }
+        .status-cell {
+            min-width: 80px;
+        }
+        .action-cell {
+            min-width: 120px;
+        }
+
+        /* ─── TOAST ─── */
+        .toast-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: #1e293b;
+            border-left: 4px solid #22c55e;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            color: #e2e8f0;
+            min-width: 200px;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── PRINT STYLES ─── */
+        .print-only {
+            display: none;
+        }
+        @media print {
+            body,
+            .main-content,
+            #pageContainer {
+                display: block !important;
+            }
+            .sidebar,
+            .no-print,
+            .glass:not(.print-only) {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+                background: white;
+                color: #000;
+                padding: 0.5in;
+                font-family: 'Inter', sans-serif;
+            }
+            .print-only table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1rem;
+            }
+            .print-only th,
+            .print-only td {
+                border: 1px solid #aaa;
+                padding: 6px 10px;
+                text-align: left;
+            }
+            .print-only th {
+                background: #f0f0f0;
+            }
+            .print-only .group-header {
+                background: #e8e8e8;
+                font-weight: 600;
+            }
+            .print-only h2 {
+                font-size: 20px;
+                margin-bottom: 2px;
+            }
+            .print-only .meta {
+                color: #555;
+                font-size: 14px;
+                margin-bottom: 12px;
+            }
+            .print-only .signature {
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+            }
+            .print-only .signature span {
+                display: inline-block;
+                border-top: 1px solid #000;
+                padding-top: 6px;
+                min-width: 180px;
+            }
+            .print-only .status-pending {
+                color: #b45309;
+            }
+            .print-only .status-complete {
+                color: #15803d;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── SIDEBAR ─── -->
+    <nav class="sidebar" id="sidebar">
+        <button class="nav-link active" data-page="dashboard"><i>📋</i><span>Dashboard</span></button>
+        <button class="nav-link" data-page="history"><i>📜</i><span>History</span></button>
+        <button class="nav-link" data-page="workers"><i>👥</i><span>Workers</span></button>
+        <button class="nav-link" data-page="settings"><i>⚙️</i><span>Settings</span></button>
+        <button class="nav-link" data-page="statistics"><i>📊</i><span>Stats</span></button>
+    </nav>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <div class="main-content" id="mainContent">
+        <div id="pageContainer"></div>
+    </div>
+
+    <!-- ─── TOAST CONTAINER ─── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ════════════════════════════════════════════════════════════════
+        // STORAGE
+        // ════════════════════════════════════════════════════════════════
+        const Store = {
+            get(key, def) {
+                try {
+                    const v = localStorage.getItem('wf_' + key);
+                    return v ? JSON.parse(v) : def;
+                } catch { return def; }
+            },
+            set(key, val) {
+                localStorage.setItem('wf_' + key, JSON.stringify(val));
+            }
+        };
+
+        // ════════════════════════════════════════════════════════════════
+        // DEFAULT DATA
+        // ════════════════════════════════════════════════════════════════
+        const DEFAULT_WORKERS = [
+            { group: 'G1', name: 'DILSHAD' }, { group: 'G1', name: 'MAMUN' }, { group: 'G1', name: 'MINTU' },
+            { group: 'G2', name: 'ALI' }, { group: 'G2', name: 'RASHID ALAM' }, { group: 'G2', name: 'TANVER' },
+            { group: 'G3', name: 'SHAMIM SABGHA' }, { group: 'G3', name: 'ABDUR RAHIM' }, { group: 'G3', name: 'SHOJEB' },
+            { group: 'G4', name: 'TABISH' }, { group: 'G4', name: 'YOUSUF' }, { group: 'G4', name: 'AZIZ' },
+            { group: 'G5', name: 'MAHTAB' }, { group: 'G5', name: 'HAMZA' }, { group: 'G5', name: 'SHUBO' },
+            { group: 'G6', name: 'ALHAM' }, { group: 'G6', name: 'MONISH' }, { group: 'G6', name: 'MOHIN' },
+            { group: 'G7', name: 'ZAKIR' }, { group: 'G7', name: 'RASAL' }, { group: 'G7', name: 'JEHAD' },
+            { group: 'G8', name: 'KHALID' }, { group: 'G8', name: 'ZAHID' }, { group: 'G8', name: 'BADAL' },
+            { group: 'G9', name: 'SHAMIM MAJON' }, { group: 'G9', name: 'TUNMOY' }, { group: 'G9', name: 'SHOHIDUL' },
+            { group: 'G10', name: 'ISHTAQ' }, { group: 'G10', name: 'SEYAM' }, { group: 'G10', name: 'rasool' }
+        ];
+
+        function initStore() {
+            if (!Store.get('workers')) Store.set('workers', DEFAULT_WORKERS);
+            if (!Store.get('settings')) Store.set('settings', {});
+            if (!Store.get('history')) Store.set('history', []);
+            if (!Store.get('cycle')) Store.set('cycle', { cycle: 1, completedGroups: [] });
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // HELPERS
+        // ════════════════════════════════════════════════════════════════
+        function getGroups() {
+            const workers = Store.get('workers', []);
+            return [...new Set(workers.map(w => w.group))].sort();
+        }
+
+        function getWorkersByGroup(group) {
+            return Store.get('workers', []).filter(w => w.group === group);
+        }
+
+        function getCycle() {
+            return Store.get('cycle', { cycle: 1, completedGroups: [] });
+        }
+
+        function setCycle(cycleData) {
+            Store.set('cycle', cycleData);
+        }
+
+        function getAvailableGroups() {
+            const all = getGroups();
+            const cycle = getCycle();
+            const completed = cycle.completedGroups || [];
+            return all.filter(g => !completed.includes(g));
+        }
+
+        function isGroupCompleted(group) {
+            const cycle = getCycle();
+            return (cycle.completedGroups || []).includes(group);
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // SAVE / LOAD ASSIGNMENT
+        // ════════════════════════════════════════════════════════════════
+        function saveAssignment(date, selectedGroups) {
+            if (!selectedGroups || selectedGroups.length === 0) {
+                toast('Please select at least one group.', 'warning');
+                return false;
+            }
+            const cycle = getCycle();
+            let history = Store.get('history', []);
+            // Remove existing entry for this date
+            history = history.filter(h => h.date !== date);
+            // All groups start as 'pending'
+            const status = {};
+            selectedGroups.forEach(g => { status[g] = 'pending'; });
+            history.push({
+                date: date,
+                groups: selectedGroups,
+                status: status,
+                cycle: cycle.cycle
+            });
+            Store.set('history', history);
+            toast(`Assignment saved for ${date} — ${selectedGroups.join(', ')}`);
+            renderPage('dashboard');
+            return true;
+        }
+
+        function getTodayEntry() {
+            const today = new Date().toISOString().slice(0, 10);
+            const history = Store.get('history', []);
+            return history.find(h => h.date === today) || null;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // MARK GROUP AS COMPLETE (called from button)
+        // ════════════════════════════════════════════════════════════════
+        window.markGroupComplete = function(group) {
+            const today = new Date().toISOString().slice(0, 10);
+            let history = Store.get('history', []);
+            const entry = history.find(h => h.date === today);
+            if (!entry) {
+                toast('No assignment for today.', 'error');
+                return;
+            }
+            if (!entry.status) entry.status = {};
+            if (entry.status[group] === 'complete') {
+                toast('Group already completed.', 'warning');
+                return;
+            }
+            // Update status
+            entry.status[group] = 'complete';
+            Store.set('history', history);
+
+            // Add to cycle completed groups
+            const cycle = getCycle();
+            if (!cycle.completedGroups) cycle.completedGroups = [];
+            if (!cycle.completedGroups.includes(group)) {
+                cycle.completedGroups.push(group);
+                setCycle(cycle);
+            }
+
+            toast(`✅ Group ${group} marked as Complete.`);
+
+            // Check if all groups are completed
+            const allGroups = getGroups();
+            const completed = cycle.completedGroups || [];
+            if (completed.length === allGroups.length && allGroups.length > 0) {
+                // Auto-advance cycle
+                cycle.cycle++;
+                cycle.completedGroups = [];
+                setCycle(cycle);
+                toast(`🎉 All groups completed! Cycle ${cycle.cycle} started.`);
+            }
+
+            renderPage('dashboard');
+        };
+
+        // ════════════════════════════════════════════════════════════════
+        // RENDER ENGINE
+        // ════════════════════════════════════════════════════════════════
+        let currentPage = 'dashboard';
+
+        function renderPage(page) {
+            currentPage = page;
+            const container = document.getElementById('pageContainer');
+            document.querySelectorAll('.sidebar .nav-link').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.page === page);
+            });
+            switch (page) {
+                case 'dashboard':
+                    renderDashboard(container);
+                    break;
+                case 'history':
+                    renderHistory(container);
+                    break;
+                case 'workers':
+                    renderWorkers(container);
+                    break;
+                case 'settings':
+                    renderSettings(container);
+                    break;
+                case 'statistics':
+                    renderStatistics(container);
+                    break;
+                default:
+                    renderDashboard(container);
+            }
+        }
+
+        // ─── DASHBOARD ──────────────────────────────────────────────────
+        function renderDashboard(container) {
+            const today = new Date().toISOString().slice(0, 10);
+            const allGroups = getGroups();
+            const availableGroups = getAvailableGroups();
+            const workers = Store.get('workers', []);
+            const history = Store.get('history', []);
+            const cycle = getCycle();
+            const todayEntry = getTodayEntry();
+
+            const selectedGroups = todayEntry ? todayEntry.groups : [];
+            const statusMap = todayEntry ? todayEntry.status || {} : {};
+
+            // Build checkboxes for AVAILABLE groups only
+            let checkboxHtml = '';
+            if (availableGroups.length === 0) {
+                checkboxHtml = '<span style="color:#94a3b8;">🎉 All groups completed in this cycle! Advance cycle to continue.</span>';
+            } else {
+                availableGroups.forEach(g => {
+                    const checked = selectedGroups.includes(g) ? 'checked' : '';
+                    checkboxHtml += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="${g}" id="chk_${g}" ${checked}>
+                            <label class="form-check-label" for="chk_${g}">${g} (${getWorkersByGroup(g).length})</label>
+                        </div>
+                    `;
+                });
+            }
+
+            // ── Build unified table ──
+            let tableHtml = '';
+            if (todayEntry && todayEntry.groups.length > 0) {
+                const groupsInTable = todayEntry.groups;
+                let rows = '';
+                groupsInTable.forEach(g => {
+                    const wList = getWorkersByGroup(g);
+                    const st = statusMap[g] || 'pending';
+                    const isComplete = st === 'complete';
+                    const badgeCls = isComplete ? 'badge-complete' : 'badge-pending';
+                    const label = isComplete ? 'Complete' : 'Pending';
+
+                    // Group header row with Complete button
+                    rows += `
+                        <tr class="group-header-row">
+                            <td colspan="4" style="padding:0.3rem 0.6rem;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span class="group-name">${g}</span>
+                                    <span>
+                                        <span class="badge ${badgeCls}" style="margin-right:0.5rem;">${label}</span>
+                                        ${!isComplete ? `<button class="btn btn-success btn-sm" onclick="markGroupComplete('${g}')">✔ Complete</button>` :
+                                        `<span style="color:#22c55e;">✓ Completed</span>`}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    // Employee rows
+                    wList.forEach(w => {
+                        rows += `
+                            <tr>
+                                <td style="padding-left:1.5rem;">${w.name}</td>
+                                <td><span class="badge ${badgeCls}">${label}</span></td>
+                            </tr>
+                        `;
+                    });
+                });
+
+                tableHtml = `
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50%;">Employee Name</th>
+                                    <th style="width:30%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // ── Build printable rows ──
+            let printRows = '';
+            if (todayEntry) {
+                todayEntry.groups.forEach(g => {
+                    const wList = getWorkersByGroup(g);
+                    const st = statusMap[g] || 'pending';
+                    const label = st === 'complete' ? 'Complete' : 'Pending';
+                    printRows += `<tr class="group-header"><td colspan="3"><strong>${g}</strong> — ${label}</td></tr>`;
+                    wList.forEach(w => {
+                        printRows += `<tr><td>${g}</td><td>${w.name}</td><td>${label}</td></tr>`;
+                    });
+                });
+            }
+
+            // Stats
+            const completedToday = todayEntry ? Object.values(statusMap).filter(v => v === 'complete').length : 0;
+            const totalGroups = allGroups.length;
+            const completedInCycle = (cycle.completedGroups || []).length;
+
+            container.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+                    <h2 style="color:#00d9ff;">📋 Dashboard</h2>
+                    <div>
+                        <span class="badge" style="background:#1e293b;">Cycle ${cycle.cycle}</span>
+                        <span class="badge" style="background:#0ea5e9;">${today}</span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Total Groups</h6><h3>${totalGroups}</h3></div></div>
+                    <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Completed in Cycle</h6><h3>${completedInCycle} / ${totalGroups}</h3></div></div>
+                    <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Today's Groups</h6><h3>${todayEntry ? todayEntry.groups.length : 0}</h3></div></div>
+                    <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Completed Today</h6><h3>${completedToday}</h3></div></div>
+                </div>
+
+                <div class="glass no-print">
+                    <h5>✏️ Select Groups for Today</h5>
+                    <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.4rem;">
+                        ${checkboxHtml}
+                    </div>
+                    <div style="margin-top:0.8rem;display:flex;flex-wrap:wrap;gap:0.5rem;">
+                        <button class="btn btn-neon" onclick="generateTable()">📊 Generate Table</button>
+                        <button class="btn btn-neon" onclick="printAssignment()">🖨️ Print Table</button>
+                        <button class="btn btn-outline-secondary" onclick="clearToday()">🗑️ Clear Today</button>
+                        <button class="btn btn-outline-info" onclick="advanceCycle()">➡️ Advance Cycle</button>
+                    </div>
+                    <div style="margin-top:0.4rem;font-size:0.85rem;color:#94a3b8;">
+                        💡 Available groups: ${availableGroups.length} of ${totalGroups} (completed groups are hidden)
+                    </div>
+                </div>
+
+                ${tableHtml ? `
+                <div class="glass">
+                    <h5>📅 Today's Assignment</h5>
+                    ${tableHtml}
+                </div>
+                ` : ''}
+
+                <!-- Printable section -->
+                <div class="print-only">
+                    <h2>Daily Assignment Report</h2>
+                    <div class="meta"><strong>Date:</strong> ${today} &nbsp;|&nbsp; <strong>Cycle:</strong> ${cycle.cycle}</div>
+                    <table>
+                        <thead><tr><th>Group</th><th>Employee Name</th><th>Status</th></tr></thead>
+                        <tbody>${printRows || '<tr><td colspan="3" style="text-align:center;color:#999;">No assignment saved.</td></tr>'}</tbody>
+                    </table>
+                    <div class="signature"><span>Supervisor</span><span>Manager</span></div>
+                </div>
+            `;
+        }
+
+        // ─── ACTIONS ──────────────────────────────────────────────────
+        window.generateTable = function() {
+            const today = new Date().toISOString().slice(0, 10);
+            const checkboxes = document.querySelectorAll('.form-check-input:checked');
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            if (selected.length === 0) {
+                toast('Please select at least one group.', 'warning');
+                return;
+            }
+            // Check if any selected group is already completed
+            const completed = selected.filter(g => isGroupCompleted(g));
+            if (completed.length > 0) {
+                toast(`Groups ${completed.join(', ')} are already completed in this cycle.`, 'warning');
+                return;
+            }
+            saveAssignment(today, selected);
+        };
+
+        window.clearToday = function() {
+            const today = new Date().toISOString().slice(0, 10);
+            let history = Store.get('history', []);
+            history = history.filter(h => h.date !== today);
+            Store.set('history', history);
+            toast('Today cleared.');
+            renderPage('dashboard');
+        };
+
+        window.advanceCycle = function() {
+            const cycle = getCycle();
+            const allGroups = getGroups();
+            const completed = cycle.completedGroups || [];
+            if (completed.length < allGroups.length && allGroups.length > 0) {
+                toast(`Cannot advance: ${allGroups.length - completed.length} groups still pending.`, 'warning');
+                return;
+            }
+            cycle.cycle++;
+            cycle.completedGroups = [];
+            setCycle(cycle);
+            toast(`🔁 Advanced to Cycle ${cycle.cycle}`);
+            renderPage('dashboard');
+        };
+
+        window.printAssignment = function() {
+            window.print();
+        };
+
+        // ─── HISTORY ──────────────────────────────────────────────────
+        function renderHistory(container) {
+            const history = Store.get('history', []);
+            let rows = '';
+            if (history.length === 0) {
+                rows = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No history yet.</td></tr>';
+            } else {
+                history.slice().reverse().forEach(h => {
+                    const groups = (h.groups || []).join(', ');
+                    const status = h.status ? (Object.values(h.status).some(v => v === 'pending') ? '⏳ Pending' :
+                        '✅ Complete') : '—';
+                    rows += `<tr><td>${h.date}</td><td>${groups}</td><td>${h.cycle || 1}</td><td>${status}</td></tr>`;
+                });
+            }
+            container.innerHTML = `
+                <h2 style="color:#00d9ff;">📜 History</h2>
+                <div class="glass">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Date</th><th>Groups</th><th>Cycle</th><th>Status</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── WORKERS ──────────────────────────────────────────────────
+        function renderWorkers(container) {
+            const workers = Store.get('workers', []);
+            let rows = '';
+            if (workers.length === 0) {
+                rows = '<tr><td colspan="3" style="text-align:center;color:#64748b;">No workers added.</td></tr>';
+            } else {
+                workers.forEach((w, i) => {
+                    rows += `
+                        <tr>
+                            <td>${w.group}</td>
+                            <td>${w.name}</td>
+                            <td><button class="btn btn-outline-danger btn-sm" onclick="deleteWorker(${i})">✖</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            container.innerHTML = `
+                <h2 style="color:#00d9ff;">👥 Workforce</h2>
+                <div class="glass">
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+                        <button class="btn btn-neon" onclick="addWorker()">➕ Add Worker</button>
+                        <button class="btn btn-neon" onclick="addGroup()">➕ Add Group</button>
+                        <button class="btn btn-neon" onclick="exportJSON()">💾 Export JSON</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Group</th><th>Employee Name</th><th>Actions</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.deleteWorker = function(idx) {
+            if (!confirm('Delete this worker?')) return;
+            let w = Store.get('workers', []);
+            w.splice(idx, 1);
+            Store.set('workers', w);
+            renderPage('workers');
+            toast('Worker deleted.');
+        };
+
+        window.addWorker = function() {
+            const group = prompt('Group name (e.g. G1)');
+            if (!group) return;
+            const name = prompt('Employee name');
+            if (!name) return;
+            let w = Store.get('workers', []);
+            w.push({ group: group.trim(), name: name.trim() });
+            Store.set('workers', w);
+            renderPage('workers');
+            toast('Worker added.');
+        };
+
+        window.addGroup = function() {
+            const group = prompt('New group name (e.g. G11)');
+            if (!group) return;
+            const name = prompt('First employee name in this group');
+            if (!name) return;
+            let w = Store.get('workers', []);
+            w.push({ group: group.trim(), name: name.trim() });
+            Store.set('workers', w);
+            renderPage('workers');
+            toast('Group created with one worker.');
+        };
+
+        window.exportJSON = function() {
+            const data = Store.get('workers', []);
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'workers.json';
+            a.click();
+        };
+
+        // ─── SETTINGS ──────────────────────────────────────────────────
+        function renderSettings(container) {
+            container.innerHTML = `
+                <h2 style="color:#00d9ff;">⚙️ Settings</h2>
+                <div class="glass">
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                        <button class="btn btn-outline-danger" onclick="resetScheduler()">🔄 Reset Scheduler</button>
+                        <button class="btn btn-outline-warning" onclick="clearHistory()">🗑️ Clear History</button>
+                        <button class="btn btn-outline-danger" onclick="clearAllData()">⚠️ Clear All Data</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.resetScheduler = function() {
+            if (confirm('Reset cycle to 1 and clear completed groups?')) {
+                Store.set('cycle', { cycle: 1, completedGroups: [] });
+                toast('Scheduler reset.');
+                renderPage('settings');
+            }
+        };
+
+        window.clearHistory = function() {
+            if (confirm('Delete all history?')) {
+                Store.set('history', []);
+                toast('History cleared.');
+                renderPage('settings');
+            }
+        };
+
+        window.clearAllData = function() {
+            if (confirm('Delete ALL data (workers, history, cycle)?')) {
+                localStorage.clear();
+                initStore();
+                toast('All data cleared.');
+                renderPage('settings');
+            }
+        };
+
+        // ─── STATISTICS ────────────────────────────────────────────────
+        function renderStatistics(container) {
+            const groups = getGroups();
+            const todayEntry = getTodayEntry();
+            const statusMap = todayEntry ? todayEntry.status || {} : {};
+            const pend = Object.values(statusMap).filter(v => v === 'pending').length;
+            const comp = Object.values(statusMap).filter(v => v === 'complete').length;
+
+            let barHtml = groups.map(g => {
+                const count = getWorkersByGroup(g).length;
+                const max = Math.max(1, ...groups.map(g2 => getWorkersByGroup(g2).length));
+                const pct = (count / max) * 100;
+                const isComplete = isGroupCompleted(g);
+                return `
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+                        <span style="width:40px;font-weight:600;">${g}</span>
+                        <div style="flex:1;background:#1e293b;border-radius:12px;height:20px;overflow:hidden;">
+                            <div style="width:${pct}%;height:100%;background:${isComplete ? '#22c55e66' : '#00d9ff66'};border-radius:12px;transition:width 0.3s;"></div>
+                        </div>
+                        <span style="min-width:30px;">${count}</span>
+                        ${isComplete ? '<span style="color:#22c55e;font-size:0.7rem;">✓</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <h2 style="color:#00d9ff;">📊 Statistics</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="glass">
+                            <h5>Workers per Group <span style="font-size:0.75rem;color:#94a3b8;">(✓ = completed in cycle)</span></h5>
+                            ${barHtml}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass">
+                            <h5>Today's Status</h5>
+                            <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+                                <div><span class="badge badge-pending">Pending</span> ${pend}</div>
+                                <div><span class="badge badge-complete">Complete</span> ${comp}</div>
+                            </div>
+                            <div style="margin-top:0.8rem;background:#1e293b;border-radius:12px;height:24px;overflow:hidden;display:flex;">
+                                <div style="width:${(pend+comp) ? (pend/(pend+comp))*100 : 0}%;background:#f59e0b;height:100%;"></div>
+                                <div style="width:${(pend+comp) ? (comp/(pend+comp))*100 : 0}%;background:#22c55e;height:100%;"></div>
+                            </div>
+                            <div style="margin-top:0.5rem;font-size:0.85rem;color:#94a3b8;">
+                                Cycle ${getCycle().cycle} · ${(getCycle().completedGroups || []).length} of ${getGroups().length} groups completed
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── TOAST ─────────────────────────────────────────────────────
+        function toast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast ${type === 'warning' ? 'warning' : type === 'error' ? 'error' : ''}`;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.3s';
+                setTimeout(() => el.remove(), 300);
+            }, 2500);
+        }
+
+        // ─── SIDEBAR NAVIGATION ──────────────────────────────────────
+        document.querySelectorAll('.sidebar .nav-link').forEach(btn => {
+            btn.addEventListener('click', function() {
+                renderPage(this.dataset.page);
+            });
+        });
+
+        // ─── INIT ──────────────────────────────────────────────────────
+        initStore();
+        renderPage('dashboard');
+    </script>
+</body>
+</html>
