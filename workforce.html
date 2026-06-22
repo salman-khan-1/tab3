@@ -295,6 +295,21 @@
             min-width: 120px;
         }
 
+        /* ─── EDIT INPUT ─── */
+        .edit-input {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            color: #e2e8f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            width: 100%;
+            min-width: 100px;
+        }
+        .edit-input:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
         /* ─── TOAST ─── */
         .toast-container {
             position: fixed;
@@ -337,13 +352,11 @@
             display: none;
         }
         @media print {
-            /* Hide sidebar, toast, and all screen content except .print-only */
             .sidebar,
             .toast-container,
             .no-print {
                 display: none !important;
             }
-            /* Hide all children of #pageContainer except .print-only */
             #pageContainer > *:not(.print-only) {
                 display: none !important;
             }
@@ -353,13 +366,11 @@
                 padding: 0.5in;
                 font-family: 'Inter', sans-serif;
             }
-            /* Force black text and borders */
             .print-only,
             .print-only * {
                 color: #000 !important;
                 border-color: #000 !important;
             }
-            /* Table specific */
             .print-only table,
             .print-only th,
             .print-only td {
@@ -382,7 +393,7 @@
                 margin-bottom: 2px;
             }
             .print-only .meta {
-                color: #555 !important; /* keep grey for meta */
+                color: #555 !important;
                 font-size: 14px;
                 margin-bottom: 12px;
             }
@@ -402,7 +413,6 @@
 </head>
 <body>
 
-    <!-- ─── SIDEBAR ─── -->
     <nav class="sidebar" id="sidebar">
         <button class="nav-link active" data-page="dashboard"><i>📋</i><span>Dashboard</span></button>
         <button class="nav-link" data-page="history"><i>📜</i><span>History</span></button>
@@ -411,12 +421,10 @@
         <button class="nav-link" data-page="statistics"><i>📊</i><span>Stats</span></button>
     </nav>
 
-    <!-- ─── MAIN CONTENT ─── -->
     <div class="main-content" id="mainContent">
         <div id="pageContainer"></div>
     </div>
 
-    <!-- ─── TOAST CONTAINER ─── -->
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
@@ -513,6 +521,8 @@
             });
             Store.set('history', history);
             toast(`Assignment saved for ${date} — ${selectedGroups.join(', ')}`);
+            // Uncheck all checkboxes
+            document.querySelectorAll('.form-check-input').forEach(cb => cb.checked = false);
             renderPage('dashboard');
             return true;
         }
@@ -524,7 +534,7 @@
         }
 
         // ════════════════════════════════════════════════════════════════
-        // MARK GROUP AS COMPLETE (called from button)
+        // MARK GROUP AS COMPLETE
         // ════════════════════════════════════════════════════════════════
         window.markGroupComplete = function(group) {
             const today = new Date().toISOString().slice(0, 10);
@@ -539,11 +549,9 @@
                 toast('Group already completed.', 'warning');
                 return;
             }
-            // Update status
             entry.status[group] = 'complete';
             Store.set('history', history);
 
-            // Add to cycle completed groups
             const cycle = getCycle();
             if (!cycle.completedGroups) cycle.completedGroups = [];
             if (!cycle.completedGroups.includes(group)) {
@@ -553,11 +561,9 @@
 
             toast(`✅ Group ${group} marked as Complete.`);
 
-            // Check if all groups are completed
             const allGroups = getGroups();
             const completed = cycle.completedGroups || [];
             if (completed.length === allGroups.length && allGroups.length > 0) {
-                // Auto-advance cycle
                 cycle.cycle++;
                 cycle.completedGroups = [];
                 setCycle(cycle);
@@ -605,23 +611,20 @@
             const allGroups = getGroups();
             const availableGroups = getAvailableGroups();
             const workers = Store.get('workers', []);
-            const history = Store.get('history', []);
             const cycle = getCycle();
             const todayEntry = getTodayEntry();
 
-            const selectedGroups = todayEntry ? todayEntry.groups : [];
             const statusMap = todayEntry ? todayEntry.status || {} : {};
 
-            // Build checkboxes for AVAILABLE groups only
+            // Build checkboxes for AVAILABLE groups only (never pre-checked)
             let checkboxHtml = '';
             if (availableGroups.length === 0) {
                 checkboxHtml = '<span style="color:#94a3b8;">🎉 All groups completed in this cycle! Advance cycle to continue.</span>';
             } else {
                 availableGroups.forEach(g => {
-                    const checked = selectedGroups.includes(g) ? 'checked' : '';
                     checkboxHtml += `
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="${g}" id="chk_${g}" ${checked}>
+                            <input class="form-check-input" type="checkbox" value="${g}" id="chk_${g}">
                             <label class="form-check-label" for="chk_${g}">${g} (${getWorkersByGroup(g).length})</label>
                         </div>
                     `;
@@ -640,7 +643,6 @@
                     const badgeCls = isComplete ? 'badge-complete' : 'badge-pending';
                     const label = isComplete ? 'Complete' : 'Pending';
 
-                    // Group header row with Complete button
                     rows += `
                         <tr class="group-header-row">
                             <td colspan="4" style="padding:0.3rem 0.6rem;">
@@ -655,7 +657,6 @@
                             </td>
                         </tr>
                     `;
-                    // Employee rows
                     wList.forEach(w => {
                         rows += `
                             <tr>
@@ -695,7 +696,6 @@
                 });
             }
 
-            // Stats
             const completedToday = todayEntry ? Object.values(statusMap).filter(v => v === 'complete').length : 0;
             const totalGroups = allGroups.length;
             const completedInCycle = (cycle.completedGroups || []).length;
@@ -768,6 +768,8 @@
                 return;
             }
             saveAssignment(today, selected);
+            // Uncheck all checkboxes (already done inside saveAssignment, but double-check)
+            document.querySelectorAll('.form-check-input').forEach(cb => cb.checked = false);
         };
 
         window.clearToday = function() {
@@ -798,34 +800,50 @@
             window.print();
         };
 
-        // ─── HISTORY ──────────────────────────────────────────────────
-        function renderHistory(container) {
-            const history = Store.get('history', []);
-            let rows = '';
-            if (history.length === 0) {
-                rows = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No history yet.</td></tr>';
-            } else {
-                history.slice().reverse().forEach(h => {
-                    const groups = (h.groups || []).join(', ');
-                    const status = h.status ? (Object.values(h.status).some(v => v === 'pending') ? '⏳ Pending' :
-                        '✅ Complete') : '—';
-                    rows += `<tr><td>${h.date}</td><td>${groups}</td><td>${h.cycle || 1}</td><td>${status}</td></tr>`;
-                });
-            }
-            container.innerHTML = `
-                <h2 style="color:#00d9ff;">📜 History</h2>
-                <div class="glass">
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>Date</th><th>Groups</th><th>Cycle</th><th>Status</th></tr></thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
         // ─── WORKERS ──────────────────────────────────────────────────
+        // Edit, Save, Cancel functions for inline editing
+        window.editWorker = function(idx) {
+            const display = document.getElementById('nameDisplay_' + idx);
+            const input = document.getElementById('nameInput_' + idx);
+            const editBtn = document.getElementById('editBtn_' + idx);
+            const saveBtn = document.getElementById('saveBtn_' + idx);
+            const cancelBtn = document.getElementById('cancelBtn_' + idx);
+
+            if (display && input && editBtn && saveBtn && cancelBtn) {
+                display.style.display = 'none';
+                input.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                input.focus();
+                input.select();
+            }
+        };
+
+        window.saveWorker = function(idx) {
+            const input = document.getElementById('nameInput_' + idx);
+            if (!input) return;
+            const newName = input.value.trim();
+            if (newName === '') {
+                toast('Name cannot be empty.', 'warning');
+                return;
+            }
+            let workers = Store.get('workers', []);
+            if (workers[idx]) {
+                workers[idx].name = newName;
+                Store.set('workers', workers);
+                toast('Worker name updated.');
+                renderPage('workers');
+            } else {
+                toast('Worker not found.', 'error');
+            }
+        };
+
+        window.cancelEdit = function(idx) {
+            // Just re-render the page to reset the UI state
+            renderPage('workers');
+        };
+
         function renderWorkers(container) {
             const workers = Store.get('workers', []);
             let rows = '';
@@ -836,8 +854,16 @@
                     rows += `
                         <tr>
                             <td>${w.group}</td>
-                            <td>${w.name}</td>
-                            <td><button class="btn btn-outline-danger btn-sm" onclick="deleteWorker(${i})">✖</button></td>
+                            <td>
+                                <span id="nameDisplay_${i}">${w.name}</span>
+                                <input type="text" id="nameInput_${i}" value="${w.name}" class="edit-input" style="display:none;" />
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info" id="editBtn_${i}" onclick="editWorker(${i})">✏️</button>
+                                <button class="btn btn-sm btn-success" id="saveBtn_${i}" onclick="saveWorker(${i})" style="display:none;">💾</button>
+                                <button class="btn btn-sm btn-outline-secondary" id="cancelBtn_${i}" onclick="cancelEdit(${i})" style="display:none;">❌</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteWorker(${i})">✖</button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -901,6 +927,33 @@
             a.download = 'workers.json';
             a.click();
         };
+
+        // ─── HISTORY ──────────────────────────────────────────────────
+        function renderHistory(container) {
+            const history = Store.get('history', []);
+            let rows = '';
+            if (history.length === 0) {
+                rows = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No history yet.</td></tr>';
+            } else {
+                history.slice().reverse().forEach(h => {
+                    const groups = (h.groups || []).join(', ');
+                    const status = h.status ? (Object.values(h.status).some(v => v === 'pending') ? '⏳ Pending' :
+                        '✅ Complete') : '—';
+                    rows += `<tr><td>${h.date}</td><td>${groups}</td><td>${h.cycle || 1}</td><td>${status}</td></tr>`;
+                });
+            }
+            container.innerHTML = `
+                <h2 style="color:#00d9ff;">📜 History</h2>
+                <div class="glass">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Date</th><th>Groups</th><th>Cycle</th><th>Status</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
 
         // ─── SETTINGS ──────────────────────────────────────────────────
         function renderSettings(container) {
