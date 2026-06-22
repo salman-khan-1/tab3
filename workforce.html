@@ -337,47 +337,52 @@
             display: none;
         }
         @media print {
-            body,
-            .main-content,
-            #pageContainer {
-                display: block !important;
-            }
+            /* Hide sidebar, toast, and all screen content except .print-only */
             .sidebar,
-            .no-print,
-            .glass:not(.print-only) {
+            .toast-container,
+            .no-print {
+                display: none !important;
+            }
+            /* Hide all children of #pageContainer except .print-only */
+            #pageContainer > *:not(.print-only) {
                 display: none !important;
             }
             .print-only {
                 display: block !important;
                 background: white;
-                color: #000;
                 padding: 0.5in;
                 font-family: 'Inter', sans-serif;
             }
-            .print-only table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 1rem;
+            /* Force black text and borders */
+            .print-only,
+            .print-only * {
+                color: #000 !important;
+                border-color: #000 !important;
             }
+            /* Table specific */
+            .print-only table,
             .print-only th,
             .print-only td {
-                border: 1px solid #aaa;
-                padding: 6px 10px;
-                text-align: left;
+                border: 1px solid #000 !important;
             }
             .print-only th {
-                background: #f0f0f0;
+                background: #f0f0f0 !important;
             }
             .print-only .group-header {
-                background: #e8e8e8;
+                background: #e8e8e8 !important;
                 font-weight: 600;
+            }
+            .print-only .badge {
+                background: #eee !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
             }
             .print-only h2 {
                 font-size: 20px;
                 margin-bottom: 2px;
             }
             .print-only .meta {
-                color: #555;
+                color: #555 !important; /* keep grey for meta */
                 font-size: 14px;
                 margin-bottom: 12px;
             }
@@ -391,15 +396,6 @@
                 border-top: 1px solid #000;
                 padding-top: 6px;
                 min-width: 180px;
-            }
-            .print-only .status-pending {
-                color: #b45309;
-            }
-            .print-only .status-complete {
-                color: #15803d;
-            }
-            .pageContainer{
-                display:non;
             }
         }
     </style>
@@ -705,7 +701,7 @@
             const completedInCycle = (cycle.completedGroups || []).length;
 
             container.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+                <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
                     <h2 style="color:#00d9ff;">📋 Dashboard</h2>
                     <div>
                         <span class="badge" style="background:#1e293b;">Cycle ${cycle.cycle}</span>
@@ -713,7 +709,7 @@
                     </div>
                 </div>
 
-                <div class="row mb-4">
+                <div class="row mb-4 no-print">
                     <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Total Groups</h6><h3>${totalGroups}</h3></div></div>
                     <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Completed in Cycle</h6><h3>${completedInCycle} / ${totalGroups}</h3></div></div>
                     <div class="col-md-3 col-6"><div class="glass small-card text-center"><h6>Today's Groups</h6><h3>${todayEntry ? todayEntry.groups.length : 0}</h3></div></div>
@@ -737,7 +733,7 @@
                 </div>
 
                 ${tableHtml ? `
-                <div class="glass">
+                <div class="glass no-print">
                     <h5>📅 Today's Assignment</h5>
                     ${tableHtml}
                 </div>
